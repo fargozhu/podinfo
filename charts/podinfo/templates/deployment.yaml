@@ -3,6 +3,9 @@ kind: Deployment
 metadata:
   name: {{ template "podinfo.fullname" . }}
   labels:
+    {{- range $key, $value := .Values.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
     {{- include "podinfo.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.hpa.enabled }}
