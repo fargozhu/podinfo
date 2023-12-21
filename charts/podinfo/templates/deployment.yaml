@@ -21,6 +21,9 @@ spec:
   template:
     metadata:
       labels:
+        {{s- range $key, $value := .Values.labels }}
+        {{ $key } }: { { $value | quote }}
+        {{- end }}
         {{- include "podinfo.selectorLabels" . | nindent 8 }}
       annotations:
         prometheus.io/scrape: "true"
