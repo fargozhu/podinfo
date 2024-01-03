@@ -26,7 +26,7 @@ spec:
         {{- end }}
         {{- include "podinfo.selectorLabels" . | nindent 8 }}
       annotations:
-        instrumentation.opentelemetry.io/inject-go: 'true'
+        instrumentation.opentelemetry.io/inject-go: 'otel-collector/demo-instrumentation'
         prometheus.io/scrape: "true"
         prometheus.io/port: "{{ .Values.service.httpPort }}"
         {{- range $key, $value := .Values.podAnnotations }}
