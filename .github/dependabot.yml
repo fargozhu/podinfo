@@ -4,5 +4,4 @@ updates:
     schedule:
       interval: "cron"
       cronjob: "*/5 * * * *"
-      
     directory: "/charts/*"
