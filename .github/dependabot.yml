@@ -1,0 +1,22 @@
+registries:
+  maven-github:
+    type: maven-repository
+    url: https://maven.pkg.github.com/RoyalAholdDelhaize
+    username: 
+    password: 
+
+version: 2
+updates:
+  - package-ecosystem: maven
+    registries:
+      - maven-github  
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      dependencies:
+        patterns:
+          - '*'
+    allow:
+      - dependency-name: "com.ahold*"
+      - dependency-name: "nl.ah*"
