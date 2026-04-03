@@ -2,7 +2,9 @@ version: 2
 updates:  
   - package-ecosystem: "helm"
     schedule:
-      interval: "hourly"
+      interval: "cron"
+      cronjob: "*/5 * * * *"
+      
     directory: "/charts/*"
     groups:
       helm-all:
