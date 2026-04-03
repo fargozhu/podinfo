@@ -3,6 +3,6 @@ updates:
   - package-ecosystem: "helm"
     schedule:
       interval: "cron"
-      cronjob: "*/5 * * * *"
+      cronjob: "0 * * * *"
     directories: 
       - "/charts/podinfo/Chart.yaml"
