@@ -23,7 +23,7 @@ updates:
   - package-ecosystem: "helm"        
     schedule:
       interval: "weekly"
-    directory: "/chart/Chart.yaml"
+    directory: "/charts/*"
     groups:
       helm-all:
         patterns:
