@@ -1,8 +1,9 @@
 version: 2
-updates:  
+updates:
   - package-ecosystem: "helm"
+    enable-beta-ecosystems: true
     schedule:
       interval: "cron"
       cronjob: "0 17 * * *"
     directories: 
-      - "/charts/**/Chart.yaml"
+      - "/charts/**/*"
