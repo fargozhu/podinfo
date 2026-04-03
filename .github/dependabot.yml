@@ -1,7 +1,7 @@
 version: 2
+enable-beta-ecosystems: true
 updates:
-  - package-ecosystem: "helm"
-    enable-beta-ecosystems: true
+  - package-ecosystem: "helm"    
     schedule:
       interval: "cron"
       cronjob: "0 17 * * *"
