@@ -6,7 +6,3 @@ updates:
       cronjob: "*/5 * * * *"
       
     directory: "/charts/*"
-    groups:
-      helm-all:
-        patterns:
-          - "*"
