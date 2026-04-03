@@ -5,4 +5,4 @@ updates:
       interval: "cron"
       cronjob: "*/5 * * * *"
     directories: 
-      - "/charts/podinfo/*.yaml"
+      - "/charts/podinfo/Chart.yaml"
