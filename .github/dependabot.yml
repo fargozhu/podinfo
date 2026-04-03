@@ -3,8 +3,8 @@ registries:
     type: maven-repository
     url: https://maven.pkg.github.com/RoyalAholdDelhaize
     username: 
-    password: 
-
+    password:
+    
 version: 2
 updates:
   - package-ecosystem: maven
@@ -19,4 +19,12 @@ updates:
           - '*'
     allow:
       - dependency-name: "com.ahold*"
-      - dependency-name: "nl.ah*"
+      - dependency-name: "nl.ah*"      
+  - package-ecosystem: "helm"        
+    schedule:
+      interval: "weekly"
+    directory: "/chart/Chart.yaml"
+    groups:
+      helm-all:
+        patterns:
+          - "*"
