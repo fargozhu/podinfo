@@ -1,10 +1,10 @@
 version: 2
 updates:  
-  - package-ecosystem: helm
+  - package-ecosystem: "helm"
     schedule:
-      interval: weekly
-    directory: /charts/*
+      interval: "weekly"
+    directory: "/charts/*"
     groups:
       helm-all:
         patterns:
-          - *
+          - "*"
