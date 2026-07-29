@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "podinfo.fullname" . }}
+  namespace: {{ include "podinfo.namespace" . }}
   labels:
     {{- range $key, $value := .Values.labels }}
     {{ $key }}: {{ $value | quote }}
@@ -38,6 +39,9 @@ spec:
       {{- if .Values.serviceAccount.enabled }}
       serviceAccountName: {{ template "podinfo.serviceAccountName" . }}
       {{- end }}
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets: {{ toYaml .Values.image.pullSecrets | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -57,6 +61,7 @@ spec:
           command:
             - ./podinfo
             - --port={{ .Values.service.httpPort | default 9898 }}
+            - --prefix={{ .Values.prefix | default "/" }}
             {{- if .Values.host }}
             - --host={{ .Values.host }}
             {{- end }}
@@ -156,7 +161,7 @@ spec:
               - podcli
               - check
               - http
-              - localhost:{{ .Values.service.httpPort | default 9898 }}/healthz
+              - localhost:{{ .Values.service.httpPort | default 9898 }}{{ trimSuffix "/" (.Values.prefix | default "/") }}/healthz
             {{- with .Values.probes.startup }}
             initialDelaySeconds: {{ .initialDelaySeconds | default 1 }}
             timeoutSeconds: {{ .timeoutSeconds | default 5 }}
@@ -171,7 +176,7 @@ spec:
               - podcli
               - check
               - http
-              - localhost:{{ .Values.service.httpPort | default 9898 }}/healthz
+              - localhost:{{ .Values.service.httpPort | default 9898 }}{{ trimSuffix "/" (.Values.prefix | default "/") }}/healthz
             {{- with .Values.probes.liveness }}
             initialDelaySeconds: {{ .initialDelaySeconds | default 1 }}
             timeoutSeconds: {{ .timeoutSeconds | default 5 }}
@@ -185,7 +190,7 @@ spec:
               - podcli
               - check
               - http
-              - localhost:{{ .Values.service.httpPort | default 9898 }}/readyz
+              - localhost:{{ .Values.service.httpPort | default 9898 }}{{ trimSuffix "/" (.Values.prefix | default "/") }}/readyz
             {{- with .Values.probes.readiness }}
             initialDelaySeconds: {{ .initialDelaySeconds | default 1 }}
             timeoutSeconds: {{ .timeoutSeconds | default 5 }}
@@ -218,6 +223,9 @@ spec:
     {{- with .Values.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
     {{- end }}
       volumes:
       - name: data

@@ -1,4 +1,4 @@
-FROM golang:1.24-alpine as builder
+FROM golang:1.26-alpine AS builder
 
 ARG REVISION
 
@@ -18,7 +18,7 @@ RUN CGO_ENABLED=0 go build -ldflags "-s -w \
     -X github.com/stefanprodan/podinfo/pkg/version.REVISION=${REVISION}" \
     -a -o bin/podcli cmd/podcli/*
 
-FROM alpine:3.21
+FROM alpine:3.24
 
 ARG BUILD_DATE
 ARG VERSION

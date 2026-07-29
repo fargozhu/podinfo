@@ -3,14 +3,16 @@ package http
 import (
 	"crypto/sha1"
 	"encoding/hex"
-	"io"
 	"net/http"
 	"os"
 	"path"
+	"regexp"
 
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 )
+
+var validHash = regexp.MustCompile(`^[a-f0-9]{40}$`)
 
 // Store godoc
 // @Summary Upload file
@@ -24,14 +26,13 @@ func (s *Server) storeWriteHandler(w http.ResponseWriter, r *http.Request) {
 	_, span := s.tracer.Start(r.Context(), "storeWriteHandler")
 	defer span.End()
 
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		s.ErrorResponse(w, r, span, "reading the request body failed", http.StatusBadRequest)
+	body, ok := s.readLimitedBody(w, r, span)
+	if !ok {
 		return
 	}
 
 	hash := hash(string(body))
-	err = os.WriteFile(path.Join(s.config.DataPath, hash), body, 0644)
+	err := os.WriteFile(path.Join(s.config.DataPath, hash), body, 0644)
 	if err != nil {
 		s.logger.Warn("writing file failed", zap.Error(err), zap.String("file", path.Join(s.config.DataPath, hash)))
 		s.ErrorResponse(w, r, span, "writing file failed", http.StatusInternalServerError)
@@ -54,12 +55,17 @@ func (s *Server) storeReadHandler(w http.ResponseWriter, r *http.Request) {
 	defer span.End()
 
 	hash := mux.Vars(r)["hash"]
+	if !validHash.MatchString(hash) {
+		s.ErrorResponse(w, r, span, "invalid hash", http.StatusBadRequest)
+		return
+	}
 	content, err := os.ReadFile(path.Join(s.config.DataPath, hash))
 	if err != nil {
 		s.logger.Warn("reading file failed", zap.Error(err), zap.String("file", path.Join(s.config.DataPath, hash)))
 		s.ErrorResponse(w, r, span, "reading file failed", http.StatusInternalServerError)
 		return
 	}
+	setRawResponseHeaders(w)
 	w.WriteHeader(http.StatusAccepted)
 	w.Write([]byte(content))
 }

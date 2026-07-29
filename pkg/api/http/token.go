@@ -2,18 +2,16 @@ package http
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"go.uber.org/zap"
 )
 
 type jwtCustomClaims struct {
 	Name string `json:"name"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 // Token godoc
@@ -28,10 +26,8 @@ func (s *Server) tokenGenerateHandler(w http.ResponseWriter, r *http.Request) {
 	_, span := s.tracer.Start(r.Context(), "tokenGenerateHandler")
 	defer span.End()
 
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		s.logger.Error("reading the request body failed", zap.Error(err))
-		s.ErrorResponse(w, r, span, "invalid request body", http.StatusBadRequest)
+	body, ok := s.readLimitedBody(w, r, span)
+	if !ok {
 		return
 	}
 	defer r.Body.Close()
@@ -44,9 +40,9 @@ func (s *Server) tokenGenerateHandler(w http.ResponseWriter, r *http.Request) {
 	expiresAt := time.Now().Add(time.Minute * 1)
 	claims := &jwtCustomClaims{
 		user,
-		jwt.StandardClaims{
+		jwt.RegisteredClaims{
 			Issuer:    "podinfo",
-			ExpiresAt: expiresAt.Unix(),
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
 		},
 	}
 
@@ -59,7 +55,7 @@ func (s *Server) tokenGenerateHandler(w http.ResponseWriter, r *http.Request) {
 
 	var result = TokenResponse{
 		Token:     t,
-		ExpiresAt: time.Unix(claims.StandardClaims.ExpiresAt, 0),
+		ExpiresAt: claims.ExpiresAt.Time,
 	}
 
 	s.JSONResponse(w, r, result)
@@ -104,12 +100,12 @@ func (s *Server) tokenValidateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if token.Valid {
-		if claims.StandardClaims.Issuer != "podinfo" {
+		if claims.Issuer != "podinfo" {
 			s.ErrorResponse(w, r, span, "invalid issuer", http.StatusUnauthorized)
 		} else {
 			var result = TokenValidationResponse{
 				TokenName: claims.Name,
-				ExpiresAt: time.Unix(claims.StandardClaims.ExpiresAt, 0),
+				ExpiresAt: claims.ExpiresAt.Time,
 			}
 			s.JSONResponse(w, r, result)
 		}

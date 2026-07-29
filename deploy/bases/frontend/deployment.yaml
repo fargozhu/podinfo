@@ -12,18 +12,19 @@ spec:
     type: RollingUpdate
   selector:
     matchLabels:
-      app: frontend
+      app.kubernetes.io/name: frontend
   template:
     metadata:
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9797"
       labels:
-        app: frontend
+        app.kubernetes.io/name: frontend
     spec:
+      serviceAccountName: frontend
       containers:
       - name: frontend
-        image: ghcr.io/stefanprodan/podinfo:6.8.0
+        image: ghcr.io/stefanprodan/podinfo:6.14.1
         imagePullPolicy: IfNotPresent
         ports:
         - name: http
@@ -39,7 +40,7 @@ spec:
         - ./podinfo
         - --port=9898
         - --port-metrics=9797
-        - --level=info
+        - --level=debug
         - --backend-url=http://backend:9898/echo
         - --cache-server=tcp://cache:6379
         env:
